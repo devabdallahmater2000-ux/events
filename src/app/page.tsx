@@ -1,36 +1,36 @@
 import EventCard from "@/components/EventCard";
+import {cacheLife} from "next/cache";
+import { IEvent } from "@/database";
 import ExplorBtn from "@/components/ExplorBtn";
-import { IEvent } from "@/lib/constants";
 
-// Revalidate this route every hour (3600 seconds).
-export const revalidate = 3600;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
-const page = async () => {
-  // Use a relative path so Next treats this as an internal fetch and can apply caching.
-  const res = await fetch(`/api/events`, { next: { revalidate } });
+const Page = async () => {
+    'use cache';
+    cacheLife('hours')
+    const response = await fetch(`${BASE_URL}/api/events`);
+    const { events } = await response.json();
 
-  const { events } = await res.json();
-  return (
-    <section>
-      <h1 className="text-center">
-        The Hub for Every Dev Event <br /> You Mustn't Miss
-      </h1>
-      <p className="text-center mt-5">Hackathons , Meetups , Conferences , All in One Place</p>
+    return (
+        <section>
+            <h1 className="text-center">The Hub for Every Dev <br /> Event You Can't Miss</h1>
+            <p className="text-center mt-5">Hackathons, Meetups, and Conferences, All in One Place</p>
 
-      <ExplorBtn />
+            <ExplorBtn/>
 
-      <div className="mt-20 space-y-7">
-        <h3>Featured Events</h3>
-        <div className="events">
-          {events?.map((event: IEvent) => (
-            <div key={event.title}>
-              <EventCard {...event} />
+            <div className="mt-20 space-y-7">
+                <h3>Featured Events</h3>
+
+                <ul className="events">
+                    {events && events.length > 0 && events.map((event: IEvent) => (
+                        <li key={event.title} className="list-none">
+                            <EventCard {...event} />
+                        </li>
+                    ))}
+                </ul>
             </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
+        </section>
+    )
+}
 
-export default page;
+export default Page;
